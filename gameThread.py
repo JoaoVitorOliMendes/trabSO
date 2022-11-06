@@ -12,24 +12,17 @@ def pessoaThread(threadN, pessoa, screen, semaphore):
     global go_away, available_doors, in_use_doors, semaphore_global
     semaphore_global = semaphore
     acquired = False
-    kill = False
+    kill = [False]
     door = ()
-    while not kill:
+    while not kill[0]:
         if go_away and not acquired:
-            print(f'{threadN} Acquiring')
             semaphore.acquire()
-            print(f'{threadN} Acquired')
             acquired = True
             if available_doors[0]:
                 door = available_doors.pop(0)
                 in_use_doors.append(door)
-                print(f'{threadN} GETTING')
-                print(threadN, available_doors, in_use_doors, door)
-        #print(threadN, available_doors, in_use_doors, door)
-        pessoa.update(door, threadN)
+        pessoa.update(door, kill)
         time.sleep(0.1)
-    print(f'{threadN} Finished')
-    kill = False
     semaphore_global.release()
 
 class Pessoa(pygame.sprite.Sprite):
@@ -43,10 +36,10 @@ class Pessoa(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.last_direction = 4
 
-    def update(self, door, threadN):
+    def update(self, door, kill):
         global go_away
         if go_away:
-            self.moveToDoor(door, threadN)
+            self.moveToDoor(door, kill)
         else:
             self.moveRandom()
     
@@ -81,8 +74,8 @@ class Pessoa(pygame.sprite.Sprite):
                 self.rect.center = (self.rect.center[0], self.rect.center[1] - PIXEL_SIZE)
                 self.last_direction = direction
 
-    def moveToDoor(self, door, threadN):
-        global semaphore_global, available_doors, in_use_doors, kill
+    def moveToDoor(self, door, kill):
+        global semaphore_global, available_doors, in_use_doors
         if self.rect.center[0] != door[0]:
             if self.rect.center[0] > door[0]:
                 self.rect.center = (self.rect.center[0] - PIXEL_SIZE, self.rect.center[1])
@@ -96,6 +89,4 @@ class Pessoa(pygame.sprite.Sprite):
         elif self.rect.center[0] == door[0] and self.rect.center[1] == door[1]:
             in_use_doors.remove(door)
             available_doors.append(door)
-            kill = True
-            print(f'{threadN} REMOVING')
-            print(threadN, self.rect.center, available_doors, in_use_doors)
+            kill[0] = True

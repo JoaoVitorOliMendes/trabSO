@@ -43,9 +43,6 @@ while True:
             quit()
             for x in array_threads:
                 x.join()
-    
-    for x in array_pessoas:
-        x.draw(screen)
 
     for x in range(WALL_SIZE[0]):
         screen.blit(arena_surface, (x+WALL_START[0], WALL_START[1]))
@@ -57,6 +54,9 @@ while True:
     
     for x in array_portas_pos:
         screen.blit(porta_surface, x)
+    
+    for x in array_pessoas:
+        x.draw(screen)
     
     if (time.time() - startlog) > TIME_LIMIT and not gameThread.go_away:
         gameThread.go_away = True
